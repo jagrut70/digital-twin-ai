@@ -1,0 +1,51 @@
+# Core Python dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+pydantic-settings>=2.0.0
+python-multipart>=0.0.6
+
+# AI/ML frameworks
+torch>=2.0.0
+transformers>=4.30.0
+scikit-learn>=1.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Data processing and visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
+pillow>=10.0.0
+
+# Database and storage
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+
+# Web and API
+websockets>=11.0
+httpx>=0.24.0
+jinja2>=3.1.0
+aiofiles>=23.1.0
+
+# Security and authentication
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.0
+
+# Testing and development
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.9.0
+flake8>=6.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+click>=8.1.0
+rich>=13.5.0
+tqdm>=4.65.0
+
+# Synthetic data generation
+faker>=19.0.0
+
+# Real-time processing
+asyncio-mqtt>=0.13.0

@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+digital_twin.db
+
+# Logs
+logs/
+*.log
+
+# Data directories (will be recreated)
+data/synthetic/
+data/synbody/
+data/aria/
+data/sipher/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# AI/ML Models
+*.pkl
+*.h5
+*.model
+*.bin
+*.safetensors
+
+# Unity builds
+visualization/unity_builds/
+
+# Node modules
+node_modules/
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Railway specific - REMOVED
+
+# Environment files
+.env
+.env.local
+.env.production

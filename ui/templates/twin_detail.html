@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Twin Details - Digital Twin System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/main.css">
+{% endblock %}
+
+{% block content %}
+<!-- Twin Header -->
+<section class="twin-header mb-6">
+    <div class="card">
+        <div class="card-body">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="twin-avatar">
+                    <i class="lni lni-robot"></i>
+                </div>
+                <div>
+                    <h1 class="twin-name">Digital Twin Alpha</h1>
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="status-dot"></div>
+                        <span class="status-text">Active</span>
+                    </div>
+                    <p class="twin-description">Primary digital twin for system monitoring and analysis</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button class="btn btn-primary">Edit Twin</button>
+                <button class="btn btn-secondary">View Logs</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Twin Metrics -->
+<section class="twin-metrics mb-6">
+    <h3 class="section-title mb-4">Performance Metrics</h3>
+    <div class="grid grid-cols-4">
+        <div class="metric-card">
+            <div class="metric-icon">
+                <i class="lni lni-heart"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">98.5%</div>
+                <div class="metric-label">Health Score</div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon">
+                <i class="lni lni-cog"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">24.7ms</div>
+                <div class="metric-label">Response Time</div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon">
+                <i class="lni lni-database"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">1.2M</div>
+                <div class="metric-label">Data Points</div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon">
+                <i class="lni lni-target"></i>
+            </div>
+            <div class="metric-content">
+                <div class="metric-value">99.9%</div>
+                <div class="metric-label">Uptime</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Twin Details -->
+<section class="twin-details mb-6">
+    <h3 class="section-title mb-4">Twin Information</h3>
+    <div class="grid grid-cols-2">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Profile</h4>
+                <div class="detail-item">
+                    <span class="detail-label">Name:</span>
+                    <span class="detail-value">Alpha</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value">System Monitor</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Created:</span>
+                    <span class="detail-value">2024-01-15</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Last Updated:</span>
+                    <span class="detail-value">2 minutes ago</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Configuration</h4>
+                <div class="detail-item">
+                    <span class="detail-label">Model Version:</span>
+                    <span class="detail-value">2.1.0</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data Sources:</span>
+                    <span class="detail-value">12 connected</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Update Frequency:</span>
+                    <span class="detail-value">Every 5 minutes</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Storage Used:</span>
+                    <span class="detail-value">2.4 GB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
