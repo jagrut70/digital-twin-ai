@@ -70,6 +70,13 @@ Thumbs.db
 # Unity builds
 visualization/unity_builds/
 
+# Large visualization test files
+visualizations/*_test.html
+visualizations/avatar_test.*
+visualizations/scene_test.*
+visualizations/behavior_scene.*
+visualizations/basic_avatar.*
+
 # Node modules
 node_modules/
 npm-debug.log*
