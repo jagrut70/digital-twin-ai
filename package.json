@@ -1,0 +1,17 @@
+{
+  "name": "digital-twin-app",
+  "version": "1.0.0",
+  "description": "A digital twin application built with synthetic data",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "dev": "python3 -m http.server 8000"
+  },
+  "keywords": ["digital-twin", "synthetic-data", "ai", "simulation"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.158.0",
+    "chart.js": "^4.4.0"
+  }
+}

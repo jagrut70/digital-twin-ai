@@ -6,6 +6,7 @@ Handles behavior patterns, decision-making, and behavioral simulation
 import asyncio
 import logging
 import random
+import time
 import numpy as np
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
@@ -535,7 +536,7 @@ class BehaviorSimulator:
             )[:3]
         }
     
-    def generate_synthetic_patterns(self, personality_traits: Any, interests: List[str]) -> List[Dict[str, Any]]:
+    def generate_synthetic_patterns(self, personality_traits: Any, interests: List[str]) -> List[BehaviorPattern]:
         """Generate synthetic behavior patterns for a digital twin"""
         try:
             patterns = []
@@ -556,54 +557,54 @@ class BehaviorSimulator:
             
             # Generate patterns based on personality traits
             if extraversion_value > 0.7:
-                patterns.append({
-                    "pattern_type": "social_interaction",
-                    "description": "High engagement in social activities",
-                    "frequency": random.uniform(0.7, 0.9),
-                    "triggers": ["social_gathering", "friend_contact", "work_meeting"],
-                    "responses": ["initiate_conversation", "actively_participate", "organize_events"],
-                    "confidence": random.uniform(0.8, 0.95),
-                    "last_observed": datetime.now(),
-                    "context": {"setting": "social", "energy_level": "high"}
-                })
+                patterns.append(BehaviorPattern(
+                    pattern_id=f"social_{int(time.time())}",
+                    pattern_type="social_interaction",
+                    frequency=random.uniform(0.7, 0.9),
+                    triggers=["social_gathering", "friend_contact", "work_meeting"],
+                    responses=["initiate_conversation", "actively_participate", "organize_events"],
+                    confidence=random.uniform(0.8, 0.95),
+                    last_observed=datetime.now(),
+                    context={"setting": "social", "energy_level": "high"}
+                ))
             
             if conscientiousness_value > 0.7:
-                patterns.append({
-                    "pattern_type": "work_habits",
-                    "description": "Systematic and organized work approach",
-                    "frequency": random.uniform(0.8, 0.95),
-                    "triggers": ["work_deadline", "project_start", "task_assignment"],
-                    "responses": ["plan_ahead", "create_schedule", "follow_procedures"],
-                    "confidence": random.uniform(0.8, 0.95),
-                    "last_observed": datetime.now(),
-                    "context": {"setting": "work", "stress_level": "low"}
-                })
+                patterns.append(BehaviorPattern(
+                    pattern_id=f"work_{int(time.time())}",
+                    pattern_type="work_habits",
+                    frequency=random.uniform(0.8, 0.95),
+                    triggers=["work_deadline", "project_start", "task_assignment"],
+                    responses=["plan_ahead", "create_schedule", "follow_procedures"],
+                    confidence=random.uniform(0.8, 0.95),
+                    last_observed=datetime.now(),
+                    context={"setting": "work", "stress_level": "low"}
+                ))
             
             if interests:
                 for interest in interests[:3]:  # Top 3 interests
-                    patterns.append({
-                        "pattern_type": "leisure_activity",
-                        "description": f"Engagement in {interest} activities",
-                        "frequency": random.uniform(0.5, 0.8),
-                        "triggers": [f"{interest}_opportunity", "free_time", "mood_boost"],
-                        "responses": ["seek_opportunities", "dedicate_time", "share_experiences"],
-                        "confidence": random.uniform(0.7, 0.9),
-                        "last_observed": datetime.now(),
-                        "context": {"setting": "leisure", "interest": interest}
-                    })
+                    patterns.append(BehaviorPattern(
+                        pattern_id=f"leisure_{interest}_{int(time.time())}",
+                        pattern_type="leisure_activity",
+                        frequency=random.uniform(0.5, 0.8),
+                        triggers=[f"{interest}_opportunity", "free_time", "mood_boost"],
+                        responses=["seek_opportunities", "dedicate_time", "share_experiences"],
+                        confidence=random.uniform(0.7, 0.9),
+                        last_observed=datetime.now(),
+                        context={"setting": "leisure", "interest": interest}
+                    ))
             
             # Add default patterns if none generated
             if not patterns:
-                patterns.append({
-                    "pattern_type": "adaptive_behavior",
-                    "description": "General adaptive behavior pattern",
-                    "frequency": random.uniform(0.4, 0.6),
-                    "triggers": ["environmental_change", "new_situation", "stress"],
-                    "responses": ["observe", "adapt", "learn"],
-                    "confidence": random.uniform(0.6, 0.8),
-                    "last_observed": datetime.now(),
-                    "context": {"setting": "general", "adaptability": "moderate"}
-                })
+                patterns.append(BehaviorPattern(
+                    pattern_id=f"adaptive_{int(time.time())}",
+                    pattern_type="adaptive_behavior",
+                    frequency=random.uniform(0.4, 0.6),
+                    triggers=["environmental_change", "new_situation", "stress"],
+                    responses=["observe", "adapt", "learn"],
+                    confidence=random.uniform(0.6, 0.8),
+                    last_observed=datetime.now(),
+                    context={"setting": "general", "adaptability": "moderate"}
+                ))
             
             logger.info(f"Generated {len(patterns)} synthetic behavior patterns")
             return patterns

@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketDisco
 from typing import Dict, List, Optional, Any
 import json
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from core.digital_twin_engine import DigitalTwinEngine
 from core.models.digital_twin import DigitalTwin
@@ -462,4 +462,250 @@ async def generate_synthetic_data(engine: DigitalTwinEngine = Depends(get_engine
         return {"message": "Synthetic data generation initiated"}
     except Exception as e:
         logger.error(f"Failed to generate synthetic data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Data Export/Import Endpoints
+@api_router.get("/twins/{twin_id}/export", response_model=Dict[str, Any])
+async def export_twin_data(
+    twin_id: str,
+    engine: DigitalTwinEngine = Depends(get_engine)
+):
+    """Export all data for a digital twin"""
+    try:
+        twin = await engine.get_twin(twin_id)
+        if not twin:
+            raise HTTPException(status_code=404, detail="Digital twin not found")
+        
+        # Get complete twin state
+        twin_state = await engine.get_twin_state(twin_id)
+        export_data = {
+            "twin_id": twin_id,
+            "export_timestamp": datetime.now().isoformat(),
+            "profile": twin.to_dict(),
+            "conversation_history": twin.conversation_history,
+            "interaction_log": twin.interaction_log[-100:],  # Last 100 interactions
+            "learning_history": getattr(twin, 'learning_history', []),
+            "behavior_patterns": [{
+                "type": pattern.pattern_type,
+                "description": pattern.description,
+                "frequency": pattern.frequency,
+                "confidence": pattern.confidence,
+                "last_observed": pattern.last_observed.isoformat(),
+                "triggers": pattern.triggers,
+                "responses": pattern.responses,
+                "context": pattern.context
+            } for pattern in twin.behavior_patterns]
+        }
+        
+        return export_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to export twin data for {twin_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/twins/{twin_id}/import", response_model=Dict[str, str])
+async def import_twin_data(
+    twin_id: str,
+    import_data: Dict[str, Any],
+    engine: DigitalTwinEngine = Depends(get_engine)
+):
+    """Import data into a digital twin"""
+    try:
+        twin = await engine.get_twin(twin_id)
+        if not twin:
+            raise HTTPException(status_code=404, detail="Digital twin not found")
+        
+        # Import profile updates
+        if "profile" in import_data:
+            profile_data = import_data["profile"]
+            updates = {}
+            if "personality_traits" in profile_data:
+                updates["personality"] = profile_data["personality_traits"]
+            if "health_metrics" in profile_data:
+                updates["health"] = profile_data["health_metrics"]
+            
+            await engine.update_twin(twin_id, updates)
+        
+        # Import conversation history
+        if "conversation_history" in import_data:
+            conversations = import_data["conversation_history"]
+            # Merge with existing conversation history
+            twin.conversation_history.extend(conversations[-50:])  # Last 50 conversations
+        
+        # Import behavior patterns
+        if "behavior_patterns" in import_data:
+            from core.models.digital_twin import BehaviorPattern
+            from datetime import datetime
+            
+            patterns = import_data["behavior_patterns"]
+            imported_patterns = []
+            for pattern_data in patterns:
+                pattern = BehaviorPattern(
+                    pattern_type=pattern_data.get("type", "unknown"),
+                    description=pattern_data.get("description", ""),
+                    frequency=pattern_data.get("frequency", 0.5),
+                    triggers=pattern_data.get("triggers", []),
+                    responses=pattern_data.get("responses", []),
+                    confidence=pattern_data.get("confidence", 0.5),
+                    last_observed=datetime.fromisoformat(pattern_data.get("last_observed", datetime.now().isoformat())),
+                    context=pattern_data.get("context", {})
+                )
+                imported_patterns.append(pattern)
+            
+            # Merge with existing patterns
+            twin.behavior_patterns.extend(imported_patterns)
+        
+        return {"message": "Data imported successfully", "import_timestamp": datetime.now().isoformat()}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to import twin data for {twin_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Advanced Analytics and Metrics
+@api_router.get("/twins/{twin_id}/analytics", response_model=Dict[str, Any])
+async def get_twin_analytics(
+    twin_id: str,
+    engine: DigitalTwinEngine = Depends(get_engine)
+):
+    """Get advanced analytics for a digital twin"""
+    try:
+        twin = await engine.get_twin(twin_id)
+        if not twin:
+            raise HTTPException(status_code=404, detail="Digital twin not found")
+        
+        # Calculate analytics
+        total_interactions = len(twin.interaction_log)
+        total_conversations = len(twin.conversation_history)
+        
+        # Interaction patterns
+        interaction_types = {}
+        for interaction in twin.interaction_log:
+            interaction_type = interaction.get("type", "unknown")
+            interaction_types[interaction_type] = interaction_types.get(interaction_type, 0) + 1
+        
+        # Personality evolution tracking
+        personality_changes = []
+        current_traits = twin.personality_traits
+        
+        # Behavior pattern analysis
+        behavior_frequency = {}
+        for pattern in twin.behavior_patterns:
+            behavior_frequency[pattern.pattern_type] = pattern.frequency
+        
+        # Conversation sentiment analysis
+        conversation_sentiments = []
+        if hasattr(twin, 'conversation_engine') and twin.conversation_engine:
+            for conv in twin.conversation_history[-10:]:
+                if "metadata" in conv:
+                    sentiment = conv["metadata"].get("sentiment", "neutral")
+                    conversation_sentiments.append(sentiment)
+        
+        # Health trends (simplified)
+        health_trend = {
+            "stress_level": twin.health_metrics.stress_level,
+            "energy_level": twin.health_metrics.energy_level,
+            "sleep_quality": twin.health_metrics.sleep_quality
+        }
+        
+        return {
+            "twin_id": twin_id,
+            "analytics_timestamp": datetime.now().isoformat(),
+            "interaction_summary": {
+                "total_interactions": total_interactions,
+                "total_conversations": total_conversations,
+                "interaction_types": interaction_types,
+                "average_daily_interactions": total_interactions / max(1, (datetime.now() - twin.created_at).days or 1)
+            },
+            "personality_analysis": {
+                "current_traits": {
+                    "openness": current_traits.openness,
+                    "conscientiousness": current_traits.conscientiousness,
+                    "extraversion": current_traits.extraversion,
+                    "agreeableness": current_traits.agreeableness,
+                    "neuroticism": current_traits.neuroticism
+                },
+                "dominant_traits": sorted([
+                    ("openness", current_traits.openness),
+                    ("conscientiousness", current_traits.conscientiousness),
+                    ("extraversion", current_traits.extraversion),
+                    ("agreeableness", current_traits.agreeableness),
+                    ("neuroticism", current_traits.neuroticism)
+                ], key=lambda x: x[1], reverse=True)[:3]
+            },
+            "behavior_analysis": {
+                "pattern_count": len(twin.behavior_patterns),
+                "behavior_frequency": behavior_frequency,
+                "current_mood": twin.current_mood,
+                "current_activity": twin.current_activity,
+                "energy_level": twin.energy_level
+            },
+            "conversation_analysis": {
+                "recent_sentiments": conversation_sentiments,
+                "conversation_count": total_conversations,
+                "average_response_confidence": sum(conv.get("metadata", {}).get("confidence", 0.5) for conv in twin.conversation_history[-10:]) / max(1, len(twin.conversation_history[-10:]))
+            },
+            "health_trends": health_trend,
+            "system_metrics": {
+                "uptime_hours": (datetime.now() - twin.created_at).total_seconds() / 3600,
+                "last_interaction": twin.last_interaction.isoformat(),
+                "last_health_update": twin.last_health_update.isoformat(),
+                "last_personality_update": twin.last_personality_update.isoformat()
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get twin analytics for {twin_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/system", response_model=Dict[str, Any])
+async def get_system_analytics(engine: DigitalTwinEngine = Depends(get_engine)):
+    """Get system-wide analytics"""
+    try:
+        total_twins = len(engine.twins)
+        active_twins = sum(1 for twin in engine.twins.values() if twin.is_active)
+        
+        # Aggregate metrics
+        total_interactions = sum(len(twin.interaction_log) for twin in engine.twins.values())
+        total_conversations = sum(len(twin.conversation_history) for twin in engine.twins.values())
+        
+        # System health
+        system_status = engine.get_system_status()
+        
+        # Average personality traits across all twins
+        if total_twins > 0:
+            avg_traits = {
+                "openness": sum(twin.personality_traits.openness for twin in engine.twins.values()) / total_twins,
+                "conscientiousness": sum(twin.personality_traits.conscientiousness for twin in engine.twins.values()) / total_twins,
+                "extraversion": sum(twin.personality_traits.extraversion for twin in engine.twins.values()) / total_twins,
+                "agreeableness": sum(twin.personality_traits.agreeableness for twin in engine.twins.values()) / total_twins,
+                "neuroticism": sum(twin.personality_traits.neuroticism for twin in engine.twins.values()) / total_twins
+            }
+        else:
+            avg_traits = {}
+        
+        return {
+            "system_analytics_timestamp": datetime.now().isoformat(),
+            "twin_statistics": {
+                "total_twins": total_twins,
+                "active_twins": active_twins,
+                "inactive_twins": total_twins - active_twins
+            },
+            "interaction_statistics": {
+                "total_interactions": total_interactions,
+                "total_conversations": total_conversations,
+                "average_interactions_per_twin": total_interactions / max(1, total_twins)
+            },
+            "system_health": system_status,
+            "average_personality_traits": avg_traits,
+            "component_status": system_status.get("components_initialized", {})
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get system analytics: {e}")
         raise HTTPException(status_code=500, detail=str(e))

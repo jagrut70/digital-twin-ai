@@ -68,7 +68,12 @@ class Settings(BaseSettings):
         default="./visualization/unity_builds",
         env="UNITY_BUILD_PATH"
     )
-    OPENGL_VERSION: str = Field(default="4.1", env="OPENGL_VERSION")
+    VISUALIZATION_ENGINE: str = Field(default="plotly", env="VISUALIZATION_ENGINE")
+    PLOTLY_THEME: str = Field(default="plotly_dark", env="PLOTLY_THEME")
+    VISUALIZATION_EXPORT_PATH: str = Field(
+        default="./visualization/exports",
+        env="VISUALIZATION_EXPORT_PATH"
+    )
     
     # Health monitoring settings
     HEALTH_UPDATE_INTERVAL: int = Field(default=60, env="HEALTH_UPDATE_INTERVAL")
@@ -106,4 +111,5 @@ os.makedirs(settings.SYNBODY_DATASET_PATH, exist_ok=True)
 os.makedirs(settings.ARIA_DATASET_PATH, exist_ok=True)
 os.makedirs(settings.SIPHER_DATASET_PATH, exist_ok=True)
 os.makedirs(settings.UNITY_BUILD_PATH, exist_ok=True)
+os.makedirs(settings.VISUALIZATION_EXPORT_PATH, exist_ok=True)
 os.makedirs(os.path.dirname(settings.LOG_FILE), exist_ok=True)

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Twin Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+</head>
+<body class="light-mode">
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="logo">
+                <i data-feather="cpu" class="logo-icon"></i>
+                <span class="logo-text">Digital Twin</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="theme-toggle">
+                <button id="theme-toggle" class="theme-btn">
+                    <i data-feather="moon" class="theme-icon"></i>
+                </button>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%233B82F6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='central' font-family='Inter' font-size='14' fill='white'%3EYou%3C/text%3E%3C/svg%3E" alt="User Avatar">
+                </div>
+                <span class="user-name">Your Name</span>
+                <i data-feather="chevron-down" class="dropdown-icon"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard -->
+    <main class="dashboard">
+        <!-- Twin Overview Section -->
+        <section class="twin-overview">
+            <div class="card twin-card">
+                <div class="twin-visual">
+                    <div class="avatar-placeholder">
+                        <div class="avatar-circle">
+                            <i data-feather="user" class="avatar-icon"></i>
+                        </div>
+                        <div class="status-indicator">
+                            <span class="status-dot active"></span>
+                            <span class="status-text">Active</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="twin-info">
+                    <h1 class="twin-name">Your Digital Twin</h1>
+                    <p class="twin-description">Synthetic data-driven personality simulation</p>
+                    <div class="twin-meta">
+                        <span class="meta-item">
+                            <i data-feather="clock" class="meta-icon"></i>
+                            Last updated: 2 minutes ago
+                        </span>
+                        <span class="meta-item">
+                            <i data-feather="database" class="meta-icon"></i>
+                            Data sources: 4 connected
+                        </span>
+                    </div>
+                    <button class="btn btn-primary edit-twin-btn">
+                        <i data-feather="edit-3" class="btn-icon"></i>
+                        Edit Twin
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Metrics Section -->
+        <section class="key-metrics">
+            <div class="metrics-grid">
+                <div class="card metric-card">
+                    <div class="metric-header">
+                        <i data-feather="target" class="metric-icon"></i>
+                        <h3 class="metric-title">Simulation Accuracy</h3>
+                    </div>
+                    <div class="metric-value">94.7%</div>
+                    <div class="metric-change positive">
+                        <i data-feather="trending-up" class="change-icon"></i>
+                        +2.3% from last week
+                    </div>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-header">
+                        <i data-feather="link" class="metric-icon"></i>
+                        <h3 class="metric-title">Data Sources</h3>
+                    </div>
+                    <div class="metric-value">4</div>
+                    <div class="metric-change neutral">
+                        <i data-feather="activity" class="change-icon"></i>
+                        All systems operational
+                    </div>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-header">
+                        <i data-feather="refresh-cw" class="metric-icon"></i>
+                        <h3 class="metric-title">Last Sync</h3>
+                    </div>
+                    <div class="metric-value">2m ago</div>
+                    <div class="metric-change positive">
+                        <i data-feather="check-circle" class="change-icon"></i>
+                        Sync successful
+                    </div>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-header">
+                        <i data-feather="brain" class="metric-icon"></i>
+                        <h3 class="metric-title">Learning Progress</h3>
+                    </div>
+                    <div class="metric-value">87.2%</div>
+                    <div class="metric-change positive">
+                        <i data-feather="trending-up" class="change-icon"></i>
+                        +5.1% this month
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interaction Log Section -->
+        <section class="interaction-log">
+            <div class="card log-card">
+                <div class="log-header">
+                    <h2 class="log-title">Recent Interactions</h2>
+                    <button class="btn btn-secondary clear-log-btn">
+                        <i data-feather="trash-2" class="btn-icon"></i>
+                        Clear
+                    </button>
+                </div>
+                <div class="log-content" id="logContent">
+                    <div class="interaction-item user-message">
+                        <div class="message-bubble">
+                            <p>How are you feeling today?</p>
+                        </div>
+                        <span class="message-timestamp">2:10 PM</span>
+                    </div>
+                    <div class="interaction-item twin-message">
+                        <div class="message-bubble">
+                            <p>Based on my synthetic health data, I'm experiencing optimal wellness parameters. My mood simulation indicates a positive state with 92% confidence.</p>
+                        </div>
+                        <span class="message-timestamp">2:10 PM</span>
+                    </div>
+                    <div class="interaction-item user-message">
+                        <div class="message-bubble">
+                            <p>What's your favorite activity?</p>
+                        </div>
+                        <span class="message-timestamp">2:08 PM</span>
+                    </div>
+                    <div class="interaction-item twin-message">
+                        <div class="message-bubble">
+                            <p>According to my behavioral modeling from synthetic lifestyle data, I find creative problem-solving and learning new concepts most engaging. Would you like to explore a topic together?</p>
+                        </div>
+                        <span class="message-timestamp">2:08 PM</span>
+                    </div>
+                </div>
+                <div class="log-input">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" placeholder="Ask your digital twin anything..." class="message-input">
+                        <button class="btn btn-primary send-btn" id="sendMessage">
+                            <i data-feather="send" class="btn-icon"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/data-models.js"></script>
+    <script src="js/synthetic-data.js"></script>
+    <script src="js/interactions.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

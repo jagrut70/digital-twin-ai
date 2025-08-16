@@ -288,29 +288,62 @@ class DigitalTwin:
         
         message = interaction_data.get("message", "")
         context = interaction_data.get("context", {})
+        sender = interaction_data.get("sender", "user")
         
-        # Generate response using conversation engine
-        response = await self.conversation_engine.generate_response(
-            message=message,
-            personality_traits=self.personality_traits,
-            context=context,
-            twin_state={
+        # Add twin state to context
+        enhanced_context = {
+            **context,
+            "twin_state": {
                 "mood": self.current_mood,
                 "activity": self.current_activity,
                 "energy": self.energy_level
             }
+        }
+        
+        # Generate unique conversation ID for this twin
+        conversation_id = f"twin_{self.twin_id}_{sender}"
+        
+        # Convert personality traits to dictionary if needed
+        personality_dict = self.personality_traits
+        if hasattr(self.personality_traits, '__dict__'):
+            personality_dict = self.personality_traits.__dict__
+        elif hasattr(self.personality_traits, '_asdict'):
+            personality_dict = self.personality_traits._asdict()
+        
+        # Generate response using conversation engine
+        response = self.conversation_engine.generate_response(
+            personality_traits=personality_dict,
+            message=message,
+            sender=sender,
+            conversation_id=conversation_id,
+            context=enhanced_context
         )
+        
+        # Extract response text from response dict
+        if isinstance(response, dict):
+            response_text = response.get("response", "I'm here to help.")
+            response_data = response
+        else:
+            response_text = str(response)
+            response_data = {"response": response_text, "confidence": 0.7}
         
         # Log conversation
         conversation_entry = {
             "timestamp": datetime.now(),
             "user_message": message,
-            "twin_response": response,
-            "context": context
+            "twin_response": response_text,
+            "context": enhanced_context,
+            "conversation_id": conversation_id,
+            "metadata": response_data
         }
         self.conversation_history.append(conversation_entry)
         
-        return {"response": response, "type": "conversation"}
+        return {
+            "response": response_text,
+            "type": "conversation",
+            "conversation_id": conversation_id,
+            "metadata": response_data
+        }
     
     async def _handle_health_query(self, interaction_data: Dict[str, Any]) -> Dict[str, Any]:
         """Handle health-related queries"""

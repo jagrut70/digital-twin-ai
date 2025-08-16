@@ -549,30 +549,109 @@ class ConversationEngine:
         # Default topic
         return "general"
     
-    def generate_response(self, personality_traits: Dict[str, Any], conversation_context: ConversationContext, last_message: ConversationMessage) -> str:
+    def generate_response(self, personality_traits: Dict[str, Any], conversation_context: ConversationContext = None, last_message: ConversationMessage = None, message: str = None, sender: str = "user", conversation_id: str = "default", context: Dict[str, Any] = None) -> Dict[str, Any]:
         """Generate a contextual response based on personality and conversation context"""
         try:
+            # Handle both old and new API calls
+            if message is not None:
+                # New API call - handle async properly
+                try:
+                    # Check if we're already in an event loop
+                    loop = asyncio.get_running_loop()
+                    # We're in an async context, so call the sync version
+                    return self._generate_response_sync(message, sender, conversation_id, context or {}, personality_traits)
+                except RuntimeError:
+                    # No event loop running, safe to use asyncio.run()
+                    return asyncio.run(self._generate_response_async(message, sender, conversation_id, context or {}, personality_traits))
+            else:
+                # Old API call - use existing parameters
+                if conversation_context is None or last_message is None:
+                    return {"response": "I'm here to help. What would you like to talk about?", "confidence": 0.5}
+                
+                # Find appropriate response template
+                template = self._find_response_template(conversation_context, last_message, personality_traits)
+                
+                if template:
+                    # Select response pattern
+                    response = random.choice(template.response_patterns)
+                    
+                    # Personalize response based on personality
+                    response = self._personalize_response(response, personality_traits, conversation_context)
+                    
+                    logger.info(f"Generated response using template: {template.template_id}")
+                    return {"response": response, "confidence": template.confidence}
+                else:
+                    # Generate fallback response
+                    fallback = self._generate_fallback_response(last_message, conversation_context)
+                    logger.info("Generated fallback response")
+                    return {"response": fallback, "confidence": 0.6}
+                    
+        except Exception as e:
+            logger.error(f"Failed to generate response: {e}")
+            return {"response": "I'm here to help. What would you like to talk about?", "confidence": 0.5}
+    
+    async def _generate_response_async(self, message: str, sender: str, conversation_id: str, context: Dict[str, Any], personality_traits: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate response for new API calls with full async processing"""
+        try:
+            # Process the incoming message
+            processed_message = await self.process_message(message, sender, conversation_id, context)
+            
+            # Get conversation context
+            conv_context = self.active_conversations.get(conversation_id)
+            if not conv_context:
+                # Create default context
+                conv_context = ConversationContext(
+                    conversation_id=conversation_id,
+                    participants=[sender, "digital_twin"],
+                    topic=self._extract_topic(message),
+                    mood="neutral",
+                    energy_level=0.7,
+                    conversation_style="casual",
+                    start_time=datetime.now(),
+                    last_activity=datetime.now(),
+                    message_count=1
+                )
+                self.active_conversations[conversation_id] = conv_context
+            
             # Find appropriate response template
-            template = self._find_response_template(conversation_context, last_message, personality_traits)
+            template = self._find_response_template(conv_context, processed_message, personality_traits)
             
             if template:
                 # Select response pattern
                 response = random.choice(template.response_patterns)
                 
                 # Personalize response based on personality
-                response = self._personalize_response(response, personality_traits, conversation_context)
+                response = self._personalize_response(response, personality_traits, conv_context)
                 
+                confidence = template.confidence
                 logger.info(f"Generated response using template: {template.template_id}")
-                return response
             else:
-                # Generate fallback response
-                fallback = self._generate_fallback_response(last_message, conversation_context)
-                logger.info("Generated fallback response")
-                return fallback
-                
+                # Generate contextual fallback response
+                response = self._generate_contextual_fallback(processed_message, conv_context, personality_traits)
+                confidence = 0.7
+                logger.info("Generated contextual fallback response")
+            
+            # Update conversation context with response
+            conv_context.last_activity = datetime.now()
+            conv_context.message_count += 1
+            
+            return {
+                "response": response,
+                "confidence": confidence,
+                "processing_time": int(time.time() * 1000) % 1000,  # Mock processing time
+                "message_type": processed_message.message_type,
+                "sentiment": processed_message.sentiment,
+                "intent": processed_message.intent,
+                "conversation_id": conversation_id
+            }
+            
         except Exception as e:
-            logger.error(f"Failed to generate response: {e}")
-            return "I'm here to help. What would you like to talk about?"
+            logger.error(f"Failed to generate async response: {e}")
+            return {
+                "response": "I'm sorry, I'm having trouble processing that right now. Could you try again?",
+                "confidence": 0.3,
+                "error": str(e)
+            }
     
     def _find_response_template(self, context: ConversationContext, message: ConversationMessage, personality_traits: Dict[str, Any]) -> Optional[ResponseTemplate]:
         """Find the most appropriate response template"""
@@ -788,21 +867,19 @@ class ConversationEngine:
             conversation_message = ConversationMessage(
                 message_id=f"fallback_{int(time.time())}",
                 sender=sender,
-                conversation_id=conversation_id,
                 content=message,
-                timestamp=datetime.now(),
                 message_type="text",
+                timestamp=datetime.now(),
+                context=context,
                 sentiment=self._analyze_sentiment_rule_based(message, context),
-                intent=self._detect_intent_rule_based(message, context),
-                metadata={"fallback": True}
+                intent=self._detect_intent_rule_based(message, context)
             )
             
             # Add to history
             self.conversation_history.append(conversation_message)
             
             # Update conversation context
-            if conversation_id in self.active_conversations:
-                self._update_conversation_context(conversation_id, conversation_message)
+            await self._update_conversation_context(conversation_id, conversation_message)
             
             return conversation_message
             
@@ -812,14 +889,116 @@ class ConversationEngine:
             return ConversationMessage(
                 message_id=f"error_{int(time.time())}",
                 sender=sender,
-                conversation_id=conversation_id,
                 content=message,
-                timestamp=datetime.now(),
                 message_type="text",
+                timestamp=datetime.now(),
+                context=context,
                 sentiment="neutral",
-                intent="socialize",
-                metadata={"error": str(e)}
+                intent="socialize"
             )
+    
+    def _generate_contextual_fallback(self, message: ConversationMessage, context: ConversationContext, personality_traits: Dict[str, Any]) -> str:
+        """Generate a contextual fallback response based on message and context"""
+        # Customize response based on message type and sentiment
+        if message.message_type == "question":
+            return "That's an interesting question. Let me think about that..."
+        elif message.message_type == "greeting":
+            return "Hello! It's great to hear from you. How are you doing today?"
+        elif message.sentiment == "negative":
+            return "I understand you might be going through something difficult. I'm here to listen."
+        elif message.sentiment == "positive":
+            return "That's wonderful! I love hearing positive news. Tell me more about it!"
+        elif message.intent == "request_action":
+            return "I'd be happy to help you with that. What specifically would you like me to do?"
+        elif message.intent == "seek_help":
+            return "Of course, I'm here to support you. What do you need help with?"
+        else:
+            # Default contextual responses based on personality
+            if personality_traits.get("empathy", 0.5) > 0.7:
+                return "I'm really interested in what you're sharing. Could you tell me more?"
+            elif personality_traits.get("extraversion", 0.5) > 0.7:
+                return "That sounds fascinating! I'd love to dive deeper into this topic with you."
+            else:
+                return "I appreciate you sharing that with me. What's on your mind?"
+    
+    def _generate_response_sync(self, message: str, sender: str, conversation_id: str, context: Dict[str, Any], personality_traits: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate response synchronously for cases where we're already in an event loop"""
+        try:
+            # Process the message synchronously using rule-based methods
+            message_type = self._classify_message_type(message)
+            sentiment = self._analyze_sentiment_rule_based(message, context)
+            intent = self._detect_intent_rule_based(message, context)
+            
+            # Create a simplified conversation message object
+            processed_message = ConversationMessage(
+                message_id=f"sync_{int(time.time())}",
+                sender=sender,
+                content=message,
+                message_type=message_type,
+                timestamp=datetime.now(),
+                context=context,
+                sentiment=sentiment,
+                intent=intent
+            )
+            
+            # Get or create conversation context
+            conv_context = self.active_conversations.get(conversation_id)
+            if not conv_context:
+                conv_context = ConversationContext(
+                    conversation_id=conversation_id,
+                    participants=[sender, "digital_twin"],
+                    topic=self._extract_topic(message),
+                    mood="neutral",
+                    energy_level=0.7,
+                    conversation_style="casual",
+                    start_time=datetime.now(),
+                    last_activity=datetime.now(),
+                    message_count=1
+                )
+                self.active_conversations[conversation_id] = conv_context
+            
+            # Find appropriate response template
+            template = self._find_response_template(conv_context, processed_message, personality_traits)
+            
+            if template:
+                # Select response pattern
+                response = random.choice(template.response_patterns)
+                
+                # Personalize response based on personality
+                response = self._personalize_response(response, personality_traits, conv_context)
+                
+                confidence = template.confidence
+                logger.info(f"Generated sync response using template: {template.template_id}")
+            else:
+                # Generate contextual fallback response
+                response = self._generate_contextual_fallback(processed_message, conv_context, personality_traits)
+                confidence = 0.7
+                logger.info("Generated sync contextual fallback response")
+            
+            # Update conversation context
+            conv_context.last_activity = datetime.now()
+            conv_context.message_count += 1
+            
+            # Add to history
+            self.conversation_history.append(processed_message)
+            
+            return {
+                "response": response,
+                "confidence": confidence,
+                "processing_time": int(time.time() * 1000) % 1000,
+                "message_type": message_type,
+                "sentiment": sentiment,
+                "intent": intent,
+                "conversation_id": conversation_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to generate sync response: {e}")
+            return {
+                "response": "I'm sorry, I'm having trouble processing that right now. Could you try again?",
+                "confidence": 0.3,
+                "error": str(e)
+            }
     
     async def shutdown(self):
         """Shutdown the conversation engine"""
