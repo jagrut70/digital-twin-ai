@@ -1,0 +1,31 @@
+# Minimal requirements for Digital Twin System
+# Core dependencies only - essential for basic functionality
+
+# Core Python dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+pydantic-settings>=2.0.0
+python-multipart>=0.0.6
+
+# Basic data processing
+numpy>=1.26.0
+pandas>=2.2.0
+
+# Web and API
+jinja2>=3.1.0
+aiofiles>=23.2.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Security
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.0
+
+# Utilities
+python-dotenv>=1.0.0
+click>=8.1.0
+
+# Synthetic data generation
+faker>=20.1.0
