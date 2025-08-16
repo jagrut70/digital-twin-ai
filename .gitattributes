@@ -1,0 +1,26 @@
+# Fix GitHub language statistics for Digital Twin AI project
+
+# Ensure Python is recognized as the primary language
+*.py linguist-language=Python
+
+# Mark data files to be ignored in language stats
+*.json linguist-generated=true
+data/* linguist-vendored=true
+
+# Mark template files appropriately
+*.html linguist-language=HTML
+
+# JavaScript and CSS files
+*.js linguist-language=JavaScript
+*.css linguist-language=CSS
+
+# Ignore test files from language stats
+*test*.py linguist-generated=true
+comprehensive_test.py linguist-generated=true
+
+# Mark configuration files
+*.env linguist-generated=true
+*.gitignore linguist-generated=true
+*.md linguist-documentation=true
+requirements.txt linguist-generated=true
+package.json linguist-generated=true
