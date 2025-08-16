@@ -79,7 +79,38 @@ npm-debug.log*
 *.temp
 .cache/
 
-# Railway specific - REMOVED
+# Test and development artifacts
+*.test.log
+test_results/
+coverage/
+.coverage
+.pytest_cache/
+.tox/
+
+# Deployment and configuration files
+*.production.env
+*.template.env
+.railwayignore
+deploy_*.sh
+start_*.sh
+docker-compose.yml
+Dockerfile
+
+# Documentation artifacts
+*_SUMMARY.md
+*_SHOWCASE.md
+*_REDESIGN*.md
+*_RESTRUCTURE*.md
+QUICKSTART.md
+DEPLOYMENT.md
+
+# Multiple requirements files (keep main requirements.txt only)
+requirements-*.txt
+
+# Setup and build files
+setup.py
+build.py
+install.py
 
 # Environment files
 .env
